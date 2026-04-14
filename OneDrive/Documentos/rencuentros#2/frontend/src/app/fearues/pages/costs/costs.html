@@ -1,0 +1,202 @@
+<body>
+  <header>
+    <div class="top">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">💸</div>
+        <div>
+          <h1 class="title">Gastos del encuentro</h1>
+          <p class="subtitle">
+            Registra un gasto por bolsillo para mantener el saldo disponible y el historial de
+            movimientos.
+          </p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="button" class="btn-secondary" (click)="goToEncuentro()">
+          ← Volver al encuentro
+        </button>
+        <button type="button" class="btn-secondary" (click)="goToContributions()">Ver aportes</button>
+      </div>
+    </div>
+
+    <div class="budget-pill" *ngIf="budget">
+      <span class="label">Presupuesto actual:</span>
+      <strong>{{ budget!.nombre }}</strong>
+      <span class="amount">{{ budget!.monto | currency : 'COP' : 'symbol-narrow' : '1.0-2' }}</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <section *ngIf="!hasBudget" class="card empty-state" aria-live="polite">
+      <h2>No hay presupuesto configurado</h2>
+      <p>
+        Para registrar gastos primero necesitas definir un presupuesto general y crear bolsillos.
+        Regresa a la pantalla de presupuesto para iniciar.
+      </p>
+      <button type="button" class="btn-primary" (click)="goToBudgets()">Crear presupuesto</button>
+    </section>
+
+    <section *ngIf="hasBudget && !hasPockets" class="card empty-state" aria-live="polite">
+      <h2>Aún no hay bolsillos</h2>
+      <p>
+        Crea bolsillos para organizar el dinero del encuentro por categoría. Desde aquí podrás
+        registrar el gasto asociado a cada bolsillo.
+      </p>
+      <button type="button" class="btn-primary" (click)="goToPockets()">Ir a bolsillos</button>
+    </section>
+
+    <ng-container *ngIf="hasBudget && hasPockets">
+      <section class="card summary">
+        <div class="summary-item">
+          <span class="summary-label">Total gastado</span>
+          <strong class="summary-value">
+            {{ totalSpent | currency : 'COP' : 'symbol-narrow' : '1.0-2' }}
+          </strong>
+        </div>
+
+        <div class="summary-item">
+          <span class="summary-label">Aportes registrados</span>
+          <strong class="summary-value">
+            {{ totalCollected | currency : 'COP' : 'symbol-narrow' : '1.0-2' }}
+          </strong>
+        </div>
+
+        <div class="summary-item">
+          <span class="summary-label">Saldo global</span>
+          <strong class="summary-value" [class.negative]="remainingBalance < 0">
+            {{ remainingBalance | currency : 'COP' : 'symbol-narrow' : '1.0-2' }}
+          </strong>
+        </div>
+      </section>
+
+      <section class="card costs-list">
+        <header class="list-head">
+          <h2>Detalle por bolsillo</h2>
+          <span class="counter" aria-live="polite">{{ pocketSummaries.length }} bolsillos</span>
+        </header>
+
+        <div class="pockets-grid">
+          <article class="pocket" *ngFor="let pocket of pocketSummaries; trackBy: trackPocketById">
+            <header class="pocket-head">
+              <h3>{{ pocket.nombre }}</h3>
+              <span class="badge" [class.negative]="pocket.balance < 0">
+                Saldo {{ pocket.balance | currency : 'COP' : 'symbol-narrow' : '1.0-2' }}
+              </span>
+            </header>
+
+            <dl class="totals">
+              <div>
+                <dt>Aportes acumulados</dt>
+                <dd>
+                  {{ pocket.totalContributions | currency : 'COP' : 'symbol-narrow' : '1.0-2' }}
+                </dd>
+              </div>
+              <div>
+                <dt>Personas que aportaron</dt>
+                <dd>{{ pocket.contributorsCount }}</dd>
+              </div>
+              <div>
+                <dt>Gasto registrado</dt>
+                <dd>{{ pocket.costAmount | currency : 'COP' : 'symbol-narrow' : '1.0-2' }}</dd>
+              </div>
+            </dl>
+
+            <section class="cost-detail" *ngIf="pocket.costName; else noCostYet">
+              <h4>Detalle del gasto</h4>
+              <p class="detail-line">
+                <span class="label">Concepto:</span>
+                <span class="value">{{ pocket.costName }}</span>
+              </p>
+              <p class="detail-line" *ngIf="pocket.recordedBy">
+                <span class="label">Registrado por:</span>
+                <span class="value">{{ pocket.recordedBy }}</span>
+              </p>
+              <p class="detail-line" *ngIf="pocket.lastUpdate as lastUpdate">
+                <span class="label">Actualizado:</span>
+                <span class="value">{{
+                  lastUpdate | date : 'd MMM yyyy, HH:mm' : undefined : 'es'
+                }}</span>
+              </p>
+            </section>
+            <ng-template #noCostYet>
+              <p class="muted info">
+                Todavía no hay un gasto registrado para este bolsillo. Agrega uno para mantener el
+                control del saldo.
+              </p>
+            </ng-template>
+
+            <ng-container *ngIf="getPocketForm(pocket.id) as pocketForm">
+              <form class="cost-form" [formGroup]="pocketForm" (ngSubmit)="confirmCost(pocket.id)">
+                <label for="cost-name-{{ pocket.id }}">Nombre del gasto</label>
+                <input
+                  id="cost-name-{{ pocket.id }}"
+                  type="text"
+                  maxlength="200"
+                  formControlName="nombre"
+                  [disabled]="!isLoggedIn || submittingPocketId === pocket.id"
+                  placeholder="Ej. Reserva de salón"
+                  autocomplete="off"
+                />
+                <div
+                  class="error"
+                  *ngIf="
+                    pocketForm.get('nombre')?.invalid &&
+                    (pocketForm.get('nombre')?.dirty || pocketForm.get('nombre')?.touched)
+                  "
+                >
+                  <span *ngIf="pocketForm.get('nombre')?.errors?.['required']"
+                    >El nombre es obligatorio.</span
+                  >
+                  <span *ngIf="pocketForm.get('nombre')?.errors?.['maxlength']"
+                    >Máximo 200 caracteres.</span
+                  >
+                </div>
+
+                <label for="cost-amount-{{ pocket.id }}">Monto gastado</label>
+                <input
+                  id="cost-amount-{{ pocket.id }}"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  formControlName="amount"
+                  [disabled]="!isLoggedIn || submittingPocketId === pocket.id"
+                  placeholder="Ej. 75000"
+                  autocomplete="off"
+                />
+                <div
+                  class="error"
+                  *ngIf="
+                    pocketForm.get('amount')?.invalid &&
+                    (pocketForm.get('amount')?.dirty || pocketForm.get('amount')?.touched)
+                  "
+                >
+                  <span *ngIf="pocketForm.get('amount')?.errors?.['required']"
+                    >El monto es obligatorio.</span
+                  >
+                  <span *ngIf="pocketForm.get('amount')?.errors?.['min']">Debe ser mayor a 0.</span>
+                </div>
+
+                <button
+                  class="btn-primary"
+                  type="submit"
+                  [disabled]="pocketForm.invalid || submittingPocketId === pocket.id || !isLoggedIn"
+                >
+                  {{ pocket.costName ? 'Actualizar gasto' : 'Registrar gasto' }}
+                </button>
+              </form>
+            </ng-container>
+          </article>
+        </div>
+      </section>
+    </ng-container>
+  </main>
+
+  <nav class="bottom" aria-label="Flujo de presupuesto">
+    <div class="nav-wrap">
+      <a class="tab" [routerLink]="['/budgets', encuentroId]">🧾 <span>Presupuesto</span></a>
+      <a class="tab" [routerLink]="['/pockets', encuentroId]">🪙 <span>Bolsillos</span></a>
+      <a class="tab" [routerLink]="['/contributions', encuentroId]">🤝 <span>Aportes</span></a>
+      <a class="tab active" [routerLink]="['/costs', encuentroId]">💸 <span>Gastos</span></a>
+    </div>
+  </nav>
+</body>

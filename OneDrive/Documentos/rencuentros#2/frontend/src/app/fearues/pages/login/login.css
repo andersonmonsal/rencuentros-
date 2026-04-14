@@ -1,0 +1,202 @@
+/* Fuente y colores base */
+.login-wrapper {
+  min-height: 100vh;
+  background: #F5F7FB; /* fondo claro general */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  font-family: Poppins, sans-serif;
+  color: #1A1C2B;
+}
+
+/* Tarjeta principal */
+.login-card {
+  background: #FFFFFF;
+  border-radius: 1.2rem;
+  padding: 3rem;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .08);
+  text-align: center;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Logo y encabezado */
+.logo-section {
+  margin-bottom: 1.5rem;
+}
+.logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #6366f1, #22d3ee);
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  color: white;
+  margin: 0 auto 0.5rem;
+}
+.logo-section h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0.5rem 0 0.25rem;
+  color: #1A1C2B;
+}
+.logo-section p {
+  font-size: 0.9rem;
+  color: #646A85;
+  margin: 0;
+}
+
+/* Inputs */
+form {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+label {
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0.25rem;
+  font-weight: 600;
+  color: #1A1C2B;
+}
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, .1);
+  background: #FAFBFF;
+  color: #1A1C2B;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s ease;
+}
+input:focus {
+  outline: none;
+  border-color: #6B63FF;
+  box-shadow: 0 0 0 3px rgba(107, 99, 255, 0.15);
+}
+input::placeholder {
+  color: #A0A5BA;
+}
+
+/* Inputs con error */
+input.input-error {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+input.input-error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+/* Mensajes de error */
+.error-message {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: -0.25rem;
+  margin-bottom: 0.5rem;
+  display: block;
+  text-align: left;
+}
+
+.error-message span {
+  display: block;
+}
+
+/* Opciones (recordarme + link) */
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+  color: #646A85;
+}
+.options input {
+  accent-color: #6B63FF;
+}
+.link {
+  color: #6B63FF;
+  text-decoration: none;
+}
+.link:hover {
+  text-decoration: underline;
+}
+
+/* Botón principal */
+.btn-primary {
+  background: linear-gradient(135deg, #6B63FF, #22C1EE);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  padding: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(34, 193, 238, 0.3);
+}
+
+/* Divider */
+.divider {
+  margin: 1.2rem 0;
+  position: relative;
+  text-align: center;
+}
+.divider::before,
+.divider::after {
+  content: "";
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+  position: absolute;
+  top: 50%;
+  width: 40%;
+}
+.divider::before { left: 0; }
+.divider::after { right: 0; }
+.divider span {
+  color: #8E92A8;
+  padding: 0 0.5rem;
+  background: #FFFFFF;
+}
+
+/* Botones alternativos */
+.btn-outline {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, .1);
+  color: #1A1C2B;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-outline:hover {
+  background: #F0F2FA;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, .08);
+}
+
+/* Sección registro */
+.signup {
+  font-size: 0.85rem;
+  margin-top: 1rem;
+  color: #646A85;
+}
+.signup .link {
+  color: #6B63FF;
+}
+
+a {
+  color: #6B63FF;
+  text-decoration: none;
+  font-weight: 600;
+}
+a:hover {
+  text-decoration: underline;
+}

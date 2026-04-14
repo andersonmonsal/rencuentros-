@@ -1,0 +1,62 @@
+# === Node ===
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === Build outputs ===
+dist/
+build/
+out-tsc/
+tmp/
+
+# === Coverage ===
+coverage/
+.nyc_output/
+
+# === Environment ===
+.env
+.env.local
+.env.*.local
+
+# === IDE ===
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-workspace
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === Angular cache ===
+.angular/
+
+# === Logs ===
+logs/
+*.log
+
+# === Temp ===
+.temp
+.tmp
+
+# === Runtime ===
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# === Test output files ===
+*_out.txt
+*_output*.txt
+test_run_*.txt
+jest_results.json
+pr_changes*.txt

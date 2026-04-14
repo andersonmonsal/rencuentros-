@@ -1,0 +1,264 @@
+<body>
+  <!-- Header tipo WhatsApp -->
+  <header class="chat-header">
+    <button class="back-btn" (click)="goBack()" aria-label="Volver a chats">←</button>
+    <div class="chat-info" (click)="toggleEncuentroDetails()">
+      <div class="avatar-small">{{ encuentro?.titulo?.substring(0, 2).toUpperCase() || 'EN' }}</div>
+      <div class="info-text">
+        <div class="chat-title">{{ encuentro?.titulo || 'Chat' }}</div>
+        <div class="chat-subtitle">{{ encuentro?.lugar || 'Encuentro' }}</div>
+      </div>
+    </div>
+    <button class="add-friends-btn" (click)="toggleParticipantes()" aria-label="Ver participantes" style="margin-right: 8px;">
+      👥
+    </button>
+    <button class="add-friends-btn" (click)="toggleAddFriends()" aria-label="Agregar amigos">
+      👥+
+    </button>
+  </header>
+
+  <!-- Modal para agregar amigos -->
+  <div class="modal-overlay" *ngIf="showAddFriends" (click)="toggleAddFriends()">
+    <div class="modal-content modal-add-friends" (click)="$event.stopPropagation()">
+      <div class="modal-header-friends">
+        <h3>👥 Agregar Participantes</h3>
+        <button class="btn-close-modal" (click)="toggleAddFriends()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Estado de carga -->
+        <div *ngIf="loadingFriends" class="loading-state">
+          <div class="spinner">⏳</div>
+          <p>Cargando amigos...</p>
+        </div>
+
+        <!-- Lista de amigos -->
+        <div *ngIf="!loadingFriends && friends.length > 0" class="friends-list">
+          <div *ngFor="let friend of friends" class="friend-item">
+            <div class="friend-avatar">
+              {{ friend.nombre?.substring(0, 1).toUpperCase()
+              }}{{ friend.apellido?.substring(0, 1).toUpperCase() }}
+            </div>
+            <div class="friend-info">
+              <div class="friend-name">{{ friend.nombre }} {{ friend.apellido }}</div>
+              <div class="friend-email">{{ friend.email }}</div>
+            </div>
+            <button
+              class="btn-add-friend"
+              (click)="addParticipante(friend)"
+              [disabled]="friend.isParticipante"
+            >
+              <span *ngIf="!friend.isParticipante">➕ Agregar</span>
+              <span *ngIf="friend.isParticipante">✓ Agregado</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Estado vacío -->
+        <div *ngIf="!loadingFriends && friends.length === 0" class="empty-friends">
+          <div class="empty-icon">👤</div>
+          <p>No tienes amigos para agregar</p>
+          <small>Agrega amigos desde la sección de búsqueda</small>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="toggleAddFriends()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para ver participantes (usando la vista) -->
+  <div class="modal-overlay" *ngIf="showParticipantes" (click)="toggleParticipantes()">
+    <div class="modal-content modal-participantes" (click)="$event.stopPropagation()">
+      <div class="modal-header-friends">
+        <h3>👥 Participantes del Encuentro</h3>
+        <button class="btn-close-modal" (click)="toggleParticipantes()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Lista de participantes -->
+        <div *ngIf="participantesDetalle.length > 0" class="participantes-list">
+          <div *ngFor="let participante of participantesDetalle" class="participante-item">
+            <div class="participante-avatar">
+              {{ (participante.nombreCompleto || 'NN').substring(0, 2).toUpperCase() }}
+            </div>
+            <div class="participante-info">
+              <div class="participante-name">{{ participante.nombreCompleto || 'Sin nombre' }}</div>
+              <div class="participante-rol" 
+                   [style.color]="participante.rol === 'organizador' ? '#2196F3' : '#666'">
+                {{ participante.rol === 'organizador' ? '⭐ Organizador' : '👤 Participante' }}
+              </div>
+              <!-- Mostrar aporte si existe -->
+              <div class="participante-aporte" *ngIf="getAporteByUsuario(participante.idUsuario) !== null">
+                💰 Aportó: ${{ getAporteByUsuario(participante.idUsuario) | number:'1.0-0' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado vacío -->
+        <div *ngIf="participantesDetalle.length === 0" class="empty-participantes">
+          <div class="empty-icon">👥</div>
+          <p>No hay participantes aún</p>
+          <small>Agrega participantes usando el botón 👥+</small>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="toggleParticipantes()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para detalles del encuentro -->
+  <div class="modal-overlay" *ngIf="showEncuentroDetails" (click)="toggleEncuentroDetails()">
+    <div class="modal-content modal-encuentro" (click)="$event.stopPropagation()">
+      
+      <!-- Vista de solo lectura -->
+      <div *ngIf="!isEditing">
+        <div class="modal-header">
+          <div class="avatar-large">
+            {{ encuentro?.titulo?.substring(0, 2).toUpperCase() || 'EN' }}
+          </div>
+          <h2>{{ encuentro?.titulo }}</h2>
+        </div>
+
+        <div class="encuentro-details">
+          <div class="detail-item">
+            <div class="detail-icon">📍</div>
+            <div class="detail-content">
+              <span class="detail-label">Lugar</span>
+              <span class="detail-value">{{ encuentro?.lugar }}</span>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-icon">📅</div>
+            <div class="detail-content">
+              <span class="detail-label">Fecha y hora</span>
+              <span class="detail-value">{{ formatDate(encuentro?.fecha) }}</span>
+            </div>
+          </div>
+
+          <div class="detail-item" *ngIf="encuentro?.descripcion">
+            <div class="detail-icon">📝</div>
+            <div class="detail-content">
+              <span class="detail-label">Descripción</span>
+              <span class="detail-value">{{ encuentro?.descripcion }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-primary" (click)="goToBudgets()">💰 Presupuestos</button>
+          <button class="btn-edit" *ngIf="isCreador()" (click)="activarEdicion()">✏️ Editar</button>
+          <button class="btn-exit" *ngIf="!isCreador()" (click)="salirDelEncuentro()">🚪 Salir</button>
+          <button class="btn-delete" *ngIf="isCreador()" (click)="eliminarEncuentro()">🗑️ Eliminar</button>
+          <button class="btn-cancel" (click)="toggleEncuentroDetails()">Cerrar</button>
+        </div>
+      </div>
+
+      <!-- Vista de edición -->
+      <div *ngIf="isEditing">
+        <div class="modal-header">
+          <div class="avatar-large">
+            ✏️
+          </div>
+          <h2>Editar Encuentro</h2>
+        </div>
+
+        <form class="edit-form">
+          <div class="form-group-edit">
+            <label for="edit-titulo">📌 Título</label>
+            <input 
+              id="edit-titulo"
+              type="text"
+              [(ngModel)]="encuentroEditando.titulo"
+              name="titulo"
+              placeholder="Título del encuentro"
+              class="form-input-edit"
+              required
+            />
+          </div>
+
+          <div class="form-group-edit">
+            <label for="edit-lugar">📍 Lugar</label>
+            <input 
+              id="edit-lugar"
+              type="text"
+              [(ngModel)]="encuentroEditando.lugar"
+              name="lugar"
+              placeholder="Lugar del encuentro"
+              class="form-input-edit"
+              required
+            />
+          </div>
+
+          <div class="form-group-edit">
+            <label for="edit-fecha">📅 Fecha y hora</label>
+            <input 
+              id="edit-fecha"
+              type="datetime-local"
+              [(ngModel)]="encuentroEditando.fecha"
+              name="fecha"
+              class="form-input-edit"
+              required
+            />
+          </div>
+
+          <div class="form-group-edit">
+            <label for="edit-descripcion">📝 Descripción</label>
+            <textarea 
+              id="edit-descripcion"
+              [(ngModel)]="encuentroEditando.descripcion"
+              name="descripcion"
+              placeholder="Descripción del encuentro"
+              class="form-textarea-edit"
+              rows="4"
+            ></textarea>
+          </div>
+        </form>
+
+        <div class="modal-actions">
+          <button class="btn-primary" (click)="guardarEdicion()">💾 Guardar cambios</button>
+          <button class="btn-cancel" (click)="cancelarEdicion()">Cancelar</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Área de mensajes (simulada) -->
+  <main class="chat-messages">
+    <div class="empty-state">
+      <div class="empty-icon">💬</div>
+      <h3>Chat del encuentro</h3>
+      <p>Este es un chat simulado para tu encuentro "{{ encuentro?.titulo }}"</p>
+      <p class="muted">Los mensajes aparecerán aquí cuando la funcionalidad esté completa</p>
+    </div>
+  </main>
+
+  <!-- Barra inferior para enviar mensajes -->
+  <footer class="chat-footer">
+    <div class="message-input-container">
+      <button class="attach-btn" aria-label="Adjuntar archivo">📎</button>
+      <input
+        type="text"
+        class="message-input"
+        placeholder="Escribe un mensaje..."
+        [(ngModel)]="messageText"
+        (keyup.enter)="sendMessage()"
+        aria-label="Escribe un mensaje"
+      />
+      <button
+        class="send-btn"
+        (click)="sendMessage()"
+        [disabled]="!messageText.trim()"
+        aria-label="Enviar mensaje"
+      >
+        📤
+      </button>
+    </div>
+  </footer>
+</body>

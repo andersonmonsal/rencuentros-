@@ -1,0 +1,185 @@
+<body>
+  <header>
+    <div class="top">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">🤝</div>
+        <div>
+          <h1 class="title">Aportes al encuentro</h1>
+          <p class="subtitle">
+            Registra el aporte individual para cada bolsillo y mantén el total recaudado al día.
+          </p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="button" class="btn-secondary" (click)="goToEncuentro()">
+          ← Volver al encuentro
+        </button>
+        <button type="button" class="btn-secondary" (click)="goToPockets()">
+          Volver a bolsillos
+        </button>
+      </div>
+    </div>
+
+    <div class="budget-pill" *ngIf="budget">
+      <span class="label">Presupuesto actual:</span>
+      <strong>{{ budget!.nombre }}</strong>
+      <span class="amount">{{ budget!.monto | currency : 'COP' : 'symbol-narrow' : '1.0-2' }}</span>
+    </div>
+  </header>
+
+  <main class="container">
+    <section *ngIf="!hasBudget" class="card empty-state" aria-live="polite">
+      <h2>No hay presupuesto configurado</h2>
+      <p>
+        Para registrar aportes primero necesitas definir un presupuesto general y crear bolsillos.
+        Regresa a la pantalla de presupuesto para iniciar.
+      </p>
+      <button type="button" class="btn-primary" (click)="goToBudgets()">Crear presupuesto</button>
+    </section>
+
+    <section *ngIf="hasBudget && !hasPockets" class="card empty-state" aria-live="polite">
+      <h2>Aún no hay bolsillos</h2>
+      <p>
+        Crea bolsillos para organizar los aportes del encuentro por categoría. Así podrás registrar
+        los montos individuales por bolsillo.
+      </p>
+      <button type="button" class="btn-primary" (click)="goToPockets()">Ir a bolsillos</button>
+    </section>
+
+    <ng-container *ngIf="hasBudget && hasPockets">
+      <section class="card summary">
+        <div class="summary-item highlight">
+          <span class="summary-label">Aporte sugerido por persona</span>
+          <strong class="summary-value suggested">
+            {{ participantes.aportePorPersona | currency : 'COP' : 'symbol-narrow' : '1.0-2' }}
+          </strong>
+          <small class="summary-note"
+            >Basado en {{ participantes.totalParticipantes }} participantes</small
+          >
+        </div>
+
+        <div class="summary-item">
+          <span class="summary-label">Total recaudado</span>
+          <strong class="summary-value">
+            {{ totalCollected | currency : 'COP' : 'symbol-narrow' : '1.0-2' }}
+          </strong>
+        </div>
+
+        <div class="summary-item" *ngIf="isLoggedIn; else guestSummary">
+          <span class="summary-label">Mi aporte global</span>
+          <strong class="summary-value">
+            {{ myTotalContribution | currency : 'COP' : 'symbol-narrow' : '1.0-2' }}
+          </strong>
+        </div>
+
+        <ng-template #guestSummary>
+          <div class="summary-item">
+            <span class="summary-label">Mi aporte global</span>
+            <strong class="summary-value muted">Inicia sesión para registrar tus aportes</strong>
+          </div>
+        </ng-template>
+      </section>
+
+      <section class="card contributions-list">
+        <header class="list-head">
+          <h2>Detalle por bolsillo</h2>
+          <span class="counter" aria-live="polite">{{ pocketSummaries.length }} bolsillos</span>
+        </header>
+
+        <div class="pockets-grid">
+          <article class="pocket" *ngFor="let pocket of pocketSummaries; trackBy: trackPocketById">
+            <header class="pocket-head">
+              <h3>{{ pocket.nombre }}</h3>
+              <span class="badge"
+                >Saldo actual
+                {{ pocket.saldoActual | currency : 'COP' : 'symbol-narrow' : '1.0-2' }}</span
+              >
+            </header>
+
+            <dl class="totals">
+              <div>
+                <dt>Mi aporte actual</dt>
+                <dd *ngIf="isLoggedIn; else guestAmount">
+                  {{ pocket.myContribution | currency : 'COP' : 'symbol-narrow' : '1.0-2' }}
+                </dd>
+                <ng-template #guestAmount>
+                  <dd class="muted">Inicia sesión para registrar tu aporte</dd>
+                </ng-template>
+              </div>
+              <div>
+                <dt>Aportes de otros asistentes</dt>
+                <dd>{{ pocket.otherEntries.length }}</dd>
+              </div>
+            </dl>
+
+            <section class="others" *ngIf="pocket.otherEntries.length; else emptyOthers">
+              <h4>Últimos aportes</h4>
+              <ul>
+                <li *ngFor="let entry of pocket.otherEntries">
+                  <span class="user">{{ entry.usuario?.nombre || 'Anónimo' }}</span>
+                  <span class="amount">{{
+                    entry.monto | currency : 'COP' : 'symbol-narrow' : '1.0-2'
+                  }}</span>
+                </li>
+              </ul>
+            </section>
+            <ng-template #emptyOthers>
+              <p class="muted info">Aún no hay aportes adicionales registrados en este bolsillo.</p>
+            </ng-template>
+
+            <ng-container *ngIf="getPocketForm(pocket.id) as pocketForm">
+              <form
+                class="contribution-form"
+                [formGroup]="pocketForm"
+                (ngSubmit)="confirmContribution(pocket.id)"
+              >
+                <label for="contribution-{{ pocket.id }}">Registra o actualiza tu aporte</label>
+                <input
+                  id="contribution-{{ pocket.id }}"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  formControlName="amount"
+                  [disabled]="!isLoggedIn || submittingPocketId === pocket.id"
+                  placeholder="Ej. 50000"
+                  autocomplete="off"
+                />
+
+                <div
+                  class="error"
+                  *ngIf="
+                    pocketForm.get('amount')?.invalid &&
+                    (pocketForm.get('amount')?.dirty || pocketForm.get('amount')?.touched)
+                  "
+                >
+                  <span *ngIf="pocketForm.get('amount')?.errors?.['required']"
+                    >El aporte es obligatorio.</span
+                  >
+                  <span *ngIf="pocketForm.get('amount')?.errors?.['min']">Debe ser mayor a 0.</span>
+                </div>
+
+                <button
+                  class="btn-primary"
+                  type="submit"
+                  [disabled]="pocketForm.invalid || submittingPocketId === pocket.id || !isLoggedIn"
+                >
+                  {{ pocket.myContribution ? 'Actualizar mi aporte' : 'Guardar mi aporte' }}
+                </button>
+              </form>
+            </ng-container>
+          </article>
+        </div>
+      </section>
+    </ng-container>
+  </main>
+
+  <nav class="bottom" aria-label="Flujo de presupuesto">
+    <div class="nav-wrap">
+      <a class="tab" [routerLink]="['/budgets', encuentroId]">🧾 <span>Presupuesto</span></a>
+      <a class="tab" [routerLink]="['/pockets', encuentroId]">🪙 <span>Bolsillos</span></a>
+      <a class="tab active" [routerLink]="['/contributions', encuentroId]"
+        >🤝 <span>Aportes</span></a
+      >
+    </div>
+  </nav>
+</body>

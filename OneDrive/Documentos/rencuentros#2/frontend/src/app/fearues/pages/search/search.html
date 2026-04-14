@@ -1,0 +1,59 @@
+<body>
+  <header>
+    <div class="top">
+      <div class="brand">
+        <div class="logo">🔎</div>
+        <div class="title">Buscar usuarios</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="search-section">
+      <input class="search-input" placeholder="Buscar por nombre" [(ngModel)]="searchTerm" (ngModelChange)="doSearch()" />
+    </section>
+
+    <section class="results">
+      <div *ngIf="loading" class="muted">Buscando...</div>
+      <div *ngIf="error" class="muted">{{ errorMsg }}</div>
+      <div *ngIf="!loading && !error && results.length === 0" class="muted">No se encontraron usuarios</div>
+
+      <div class="user-card" *ngFor="let u of results">
+        <div class="avatar">{{ (u.nombre ? (u.nombre[0] || '') : 'U') + (u.apellido ? (u.apellido[0] || '') : '') }}</div>
+        <div class="info">
+          <div class="name">{{ u.nombre }} {{ u.apellido }}</div>
+          <small class="muted">{{ u.email }}</small>
+        </div>
+        <div class="actions">
+          <ng-container *ngIf="u.id === currentUserId">
+            <span class="muted">Tú</span>
+          </ng-container>
+          <ng-container *ngIf="u.id !== currentUserId">
+            <ng-container *ngIf="u.isFriend">
+              <span class="muted">Ya son amigos</span>
+            </ng-container>
+            <ng-container *ngIf="!u.isFriend && u.pendingRequestFromMe">
+              <span class="muted">Enviada</span>
+            </ng-container>
+            <ng-container *ngIf="!u.isFriend && u.pendingRequestToMe">
+              <span class="muted">Te envió solicitud</span>
+            </ng-container>
+            <ng-container *ngIf="!u.isFriend && !u.pendingRequestFromMe && !u.pendingRequestToMe">
+              <button class="btn" (click)="sendRequest(u.id)">Enviar solicitud</button>
+            </ng-container>
+          </ng-container>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottom" aria-label="Navegación">
+    <div class="nav-wrap">
+      <a class="tab" routerLink="/home">🗓️ <span>Calendario</span></a>
+      <a class="tab" routerLink="/chats">💬 <span>Chats</span></a>
+      <a class="tab active" routerLink="/search">🔎 <span>Buscar</span></a>
+      <a class="tab" routerLink="/account">⚙️ <span>Cuenta</span></a>
+      <a class="tab" routerLink="/notifications">🔔 <span>Notificaciones</span></a>
+    </div>
+  </nav>
+</body>

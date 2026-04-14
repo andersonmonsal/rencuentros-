@@ -1,0 +1,29 @@
+* { box-sizing: border-box; }
+body { margin: 0; background: #f7f9fb; color: #1f2937; font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+
+header { position: sticky; top: 0; background: #ffffffcc; backdrop-filter: blur(10px); z-index: 10; border-bottom: 1px solid #e6e9ef; }
+.top { display:flex; align-items:center; gap:12px; padding:14px; }
+.brand { display:flex; align-items:center; gap:10px; }
+.logo { width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg,#6366f1,#22d3ee); display:grid; place-items:center; color:#fff; }
+.title { font-weight:700; }
+
+.container { padding: 16px; padding-bottom: 110px; }
+.search-section { margin: 10px 0 18px; }
+.search-input { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff; outline: none; }
+.search-input:focus { box-shadow: 0 8px 24px rgba(34,211,238,0.08); }
+
+.results { display: grid; gap: 12px; }
+.user-card { display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: center; padding: 12px; border-radius: 12px; background: #fff; border: 1px solid #e6e9ef; }
+.avatar { width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#6366f1,#22d3ee); display:grid; place-items:center; color:white; font-weight:700; }
+.name { font-weight:700; }
+.actions { display:flex; align-items:center; }
+.btn { appearance:none; border:none; padding:8px 12px; border-radius:10px; background:linear-gradient(135deg,#6366f1,#22d3ee); color:#fff; cursor:pointer; }
+.btn[disabled] { opacity:0.6; cursor:default; background: #d1d5db; color:#fff; }
+
+/* bottom nav reuse */
+nav.bottom { position: fixed; bottom: 10px; left: 0; right: 0; display:flex; justify-content:center; z-index:50; }
+.nav-wrap { width: min(820px, 94%); display: grid; grid-template-columns: repeat(5, 1fr); background: #ffffffcc; backdrop-filter: blur(10px); border: 1px solid #e2e8f0; padding: 10px; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+.tab { display:flex; align-items:center; justify-content:center; gap:8px; padding:10px; border-radius:12px; color:#334155; text-decoration:none; font-weight:500; }
+.tab.active { background: linear-gradient(135deg,#6366f1,#22d3ee); color:white; font-weight:600; }
+
+@media (max-width: 680px) { .nav-wrap { grid-template-columns: repeat(5, 1fr); gap:6px; } }

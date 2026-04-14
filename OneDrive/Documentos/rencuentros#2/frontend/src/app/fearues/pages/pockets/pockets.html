@@ -1,0 +1,119 @@
+<body>
+  <header>
+    <div class="top">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">🪙</div>
+        <div>
+          <h1 class="title">Bolsillos del presupuesto</h1>
+          <p class="subtitle">
+            Agrupa el dinero en categorías para controlar aportes y gastos del encuentro.
+          </p>
+        </div>
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        <button type="button" class="btn-secondary" (click)="goToEncuentro()">
+          ← Volver al encuentro
+        </button>
+        <button type="button" class="btn-secondary" (click)="goToBudgets()">
+          Volver a presupuesto
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Estado de carga -->
+    <section *ngIf="loading" class="card empty-state" aria-live="polite">
+      <div class="spinner">⏳</div>
+      <p>Cargando bolsillos...</p>
+    </section>
+
+    <ng-container *ngIf="!loading">
+      <section class="card create-pocket">
+        <div>
+          <h2>Crea un nuevo bolsillo</h2>
+          <p class="muted">
+            Usa bolsillos para separar el dinero estimado en categorías: transporte, comida,
+            souvenirs, etc.
+          </p>
+        </div>
+
+        <form class="pocket-form" [formGroup]="pocketForm" (ngSubmit)="onCreatePocket()">
+          <label for="pocket-name">Nombre del bolsillo</label>
+          <input
+            id="pocket-name"
+            type="text"
+            maxlength="200"
+            formControlName="nombre"
+            placeholder="Ej. Transporte"
+            autocomplete="off"
+          />
+          <div
+            class="error"
+            *ngIf="nombreControl?.invalid && (nombreControl?.dirty || nombreControl?.touched)"
+          >
+            <span *ngIf="nombreControl?.errors?.['required']">El nombre es obligatorio.</span>
+            <span *ngIf="nombreControl?.errors?.['maxLength']">Máximo 200 caracteres.</span>
+          </div>
+
+          <button class="btn-primary" type="submit" [disabled]="submitting || pocketForm.invalid">
+            Crear bolsillo
+          </button>
+        </form>
+      </section>
+
+      <section class="card pocket-list">
+        <header class="list-head">
+          <h2>Bolsillos creados</h2>
+          <span class="counter" aria-live="polite">{{ pockets.length }} en total</span>
+        </header>
+
+        <ng-container *ngIf="pockets.length; else emptyPockets">
+          <div class="pockets-grid">
+            <article class="pocket" *ngFor="let pocket of pockets; trackBy: trackPocketById">
+              <header>
+                <h3>{{ pocket.nombre }}</h3>
+                <button 
+                  class="btn-delete-pocket" 
+                  (click)="eliminarBolsillo(pocket)"
+                  title="Eliminar bolsillo"
+                  type="button"
+                >
+                  🗑️
+                </button>
+              </header>
+              <dl>
+                <div>
+                  <dt>Saldo actual</dt>
+                  <dd>{{ pocket.saldoActual | currency : 'COP' : 'symbol-narrow' : '1.0-2' }}</dd>
+                </div>
+              </dl>
+              <footer>
+                <p class="footnote">
+                  Actualizaremos estos montos cuando conectemos aportes y gastos desde el backend.
+                </p>
+              </footer>
+            </article>
+          </div>
+        </ng-container>
+
+        <ng-template #emptyPockets>
+          <div class="empty-pockets" aria-live="polite">
+            <p>Aún no hay bolsillos creados para este presupuesto.</p>
+            <button type="button" class="btn-secondary" (click)="pocketForm.reset()">
+              Limpiar formulario
+            </button>
+          </div>
+        </ng-template>
+      </section>
+    </ng-container>
+  </main>
+
+  <nav class="bottom" aria-label="Flujo de presupuesto">
+    <div class="nav-wrap">
+      <a class="tab" [routerLink]="['/budgets', encuentroId]">🧾 <span>Presupuesto</span></a>
+      <a class="tab active" [routerLink]="['/pockets', encuentroId]">🪙 <span>Bolsillos</span></a>
+      <a class="tab" [routerLink]="['/contributions', encuentroId]">🤝 <span>Aportes</span></a>
+    </div>
+  </nav>
+</body>

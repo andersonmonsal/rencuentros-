@@ -1,0 +1,146 @@
+pipeline {
+    agent any
+
+    tools {
+        nodejs 'NodeJS-20'  // Configurar en Jenkins: Manage Jenkins > Tools > NodeJS
+    }
+
+    environment {
+        SONAR_HOST_URL = 'http://sonarqube:9000'
+    }
+
+    stages {
+
+        // ╔══════════════════════════════════════╗
+        // ║           B A C K E N D              ║
+        // ╚══════════════════════════════════════╝
+
+        stage('Backend - Install') {
+            steps {
+                dir('backend') {
+                    bat 'npm ci'
+                }
+            }
+        }
+
+        stage('Backend - Test + Coverage') {
+            steps {
+                dir('backend') {
+                    bat 'npm run test:cov -- --passWithNoTests'
+                }
+            }
+            post {
+                always {
+                    publishHTML(target: [
+                        reportDir: 'backend/coverage/lcov-report',
+                        reportFiles: 'index.html',
+                        reportName: 'Backend Coverage Report'
+                    ])
+                }
+            }
+        }
+
+        stage('Backend - SonarQube Analysis') {
+            steps {
+                dir('backend') {
+                    withSonarQubeEnv('SonarQube') {  // Configurar en Jenkins: Manage Jenkins > System > SonarQube servers
+                        bat "sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL}"
+                    }
+                }
+            }
+        }
+
+        stage('Backend - Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Backend - Build Docker Image') {
+            steps {
+                dir('backend') {
+                    bat 'docker build -t encuentros-backend:latest .'
+                }
+            }
+        }
+
+        // ╔══════════════════════════════════════╗
+        // ║          F R O N T E N D             ║
+        // ╚══════════════════════════════════════╝
+
+        stage('Frontend - Install') {
+            steps {
+                dir('frontend') {
+                    bat 'npm ci'
+                }
+            }
+        }
+
+        stage('Frontend - Test + Coverage') {
+            steps {
+                dir('frontend') {
+                    bat 'npx ng test --watch=false --browsers=ChromeHeadless --code-coverage'
+                }
+            }
+            post {
+                always {
+                    publishHTML(target: [
+                        reportDir: 'frontend/coverage/encuentros-front',
+                        reportFiles: 'index.html',
+                        reportName: 'Frontend Coverage Report'
+                    ])
+                }
+            }
+        }
+
+        stage('Frontend - SonarQube Analysis') {
+            steps {
+                dir('frontend') {
+                    withSonarQubeEnv('SonarQube') {
+                        bat "sonar-scanner -Dsonar.host.url=${SONAR_HOST_URL}"
+                    }
+                }
+            }
+        }
+
+        stage('Frontend - Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Frontend - Build Docker Image') {
+            steps {
+                dir('frontend') {
+                    bat 'docker build -t encuentros-frontend:latest .'
+                }
+            }
+        }
+
+        // ╔══════════════════════════════════════╗
+        // ║           D E P L O Y               ║
+        // ╚══════════════════════════════════════╝
+
+        stage('Deploy with Docker Compose') {
+            steps {
+                bat 'docker-compose up -d --build backend frontend'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Pipeline completado exitosamente - Backend + Frontend desplegados'
+        }
+        failure {
+            echo '❌ Pipeline falló - Revisar los logs de los stages anteriores'
+        }
+        always {
+            cleanWs()
+        }
+    }
+}

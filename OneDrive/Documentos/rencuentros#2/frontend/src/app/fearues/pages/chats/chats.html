@@ -1,0 +1,46 @@
+<body>
+  <header>
+    <div class="top">
+      <div class="brand">
+        <div class="logo">💬</div>
+      </div>
+      <input class="search" placeholder="Buscar conversaciones" aria-label="Buscar conversaciones">
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Mostrar mensaje cuando no hay chats -->
+    <div *ngIf="chats.length === 0" class="empty-state">
+      <div class="empty-icon">📭</div>
+      <h3>No hay chats</h3>
+      <p>Cuando crees un encuentro, aparecerá aquí como chat</p>
+    </div>
+
+    <!-- Lista de chats dinámicos -->
+    <a 
+      *ngFor="let chat of chats" 
+      class="chat" 
+      [routerLink]="['/chat-detail', chat.id]" 
+      [attr.aria-label]="'Abrir chat ' + chat.titulo"
+    >
+      <div class="avatar">{{ chat.initials }}</div>
+      <div class="chat-info">
+        <div class="name">{{ chat.titulo }}</div>
+        <div class="preview">{{ chat.lastMessage }}</div>
+      </div>
+      <div class="meta">
+        <small class="muted">{{ chat.timeLabel }}</small>
+      </div>
+    </a>
+  </main>
+
+  <nav class="bottom" aria-label="Navegación">
+    <div class="nav-wrap">
+      <a class="tab" routerLink="/home">🗓️ <span>Calendario</span></a>
+      <a class="tab active" routerLink="/chats">💬 <span>Chats</span></a>
+      <a class="tab" routerLink="/search">🔎 <span>Buscar</span></a>
+      <a class="tab" routerLink="/account">⚙️ <span>Cuenta</span></a>
+      <a class="tab" routerLink="/notifications">🔔 <span>Notificaciones</span></a>
+    </div>
+  </nav>
+</body>

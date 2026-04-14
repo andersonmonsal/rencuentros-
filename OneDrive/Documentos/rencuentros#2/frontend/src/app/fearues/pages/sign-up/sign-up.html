@@ -1,0 +1,83 @@
+<!-- Fuente -->
+<link 
+  href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" 
+  rel="stylesheet"
+  integrity="sha384-8GZX2/iLODahMuGt+ayR4FLfSwVowkQ3k1DpykWsIN+o3sz9BlGo/4ACgeXY8lYD"
+  crossorigin="anonymous">
+
+<body>
+  <div class="card">
+    <div class="logo-section">
+      <div class="logo">💬</div>
+      <h1>Encuentros</h1>
+      <p>Organiza, chatea y no olvides ningún plan</p>
+    </div>
+    <h1>Crea tu cuenta</h1>
+  <form [formGroup]="signUpForm" (ngSubmit)="onSignUp()">
+      <label for="nombre">Nombre</label>
+      <input 
+        id="nombre" 
+        formControlName="nombre" 
+        type="text" 
+        placeholder="Tu nombre" 
+        [class.input-error]="nombre?.invalid && nombre?.touched"
+      >
+      <div class="error-message" *ngIf="nombre?.invalid && nombre?.touched">
+        <span *ngIf="nombre?.errors?.['required']">El nombre es obligatorio</span>
+      </div>
+
+      <label for="apellido">Apellido</label>
+      <input 
+        id="apellido" 
+        formControlName="apellido" 
+        type="text" 
+        placeholder="Tu apellido" 
+        [class.input-error]="apellido?.invalid && apellido?.touched"
+      >
+      <div class="error-message" *ngIf="apellido?.invalid && apellido?.touched">
+        <span *ngIf="apellido?.errors?.['required']">El apellido es obligatorio</span>
+      </div>
+
+      <label for="email">Correo electrónico</label>
+      <input 
+        id="email" 
+        formControlName="email" 
+        type="email" 
+        placeholder="nombre@correo.com" 
+        [class.input-error]="email?.invalid && email?.touched"
+      >
+      <div class="error-message" *ngIf="email?.invalid && email?.touched">
+        <span *ngIf="email?.errors?.['required']">El correo es obligatorio</span>
+        <span *ngIf="email?.errors?.['email']">Ingresa un correo válido</span>
+      </div>
+
+      <label for="contrasena">Contraseña</label>
+      <input 
+        id="contrasena" 
+        formControlName="contrasena" 
+        type="password" 
+        placeholder="••••••••" 
+        [class.input-error]="contrasena?.invalid && contrasena?.touched"
+      >
+      <div class="error-message" *ngIf="contrasena?.invalid && contrasena?.touched">
+        <span *ngIf="contrasena?.errors?.['required']">La contraseña es obligatoria</span>
+        <span *ngIf="contrasena?.errors?.['minlength']">La contraseña debe tener al menos 8 caracteres</span>
+      </div>
+
+      <label for="confirm">Confirmar contraseña</label>
+      <input 
+        id="confirm" 
+        formControlName="confirmPassword" 
+        type="password" 
+        placeholder="••••••••" 
+        [class.input-error]="confirmPassword?.invalid && confirmPassword?.touched"
+      >
+      <div class="error-message" *ngIf="confirmPassword?.invalid && confirmPassword?.touched">
+        <span *ngIf="confirmPassword?.errors?.['required']">Debes confirmar tu contraseña</span>
+      </div>
+
+  <button class="btn" type="submit">Crear cuenta</button>
+    </form>
+    <p>¿Ya tienes cuenta? <a routerLink="/">Inicia sesión</a></p>
+  </div>
+</body>

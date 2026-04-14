@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  # ── Base de datos PostgreSQL ──
+  postgres:
+    image: postgres:16-alpine
+    container_name: encuentros-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: Encuentros
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - encuentros-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend NestJS ──
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: encuentros-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DB_TYPE: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: Encuentros
+      DB_SSL: "false"
+      JWT_SECRET: encuentros_secret_key_2025_change_this_in_production
+      PORT: 3000
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - encuentros-net
+
+  # ── Frontend Angular + Nginx ──
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: encuentros-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - encuentros-net
+
+  # ── SonarQube (análisis de calidad) ──
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: encuentros-sonarqube
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://postgres:5432/sonar
+      SONAR_JDBC_USERNAME: postgres
+      SONAR_JDBC_PASSWORD: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    networks:
+      - encuentros-net
+
+  # ── Jenkins (CI/CD) ──
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: encuentros-jenkins
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - encuentros-net
+
+volumes:
+  pgdata:
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:
+  jenkins_home:
+
+networks:
+  encuentros-net:
+    driver: bridge

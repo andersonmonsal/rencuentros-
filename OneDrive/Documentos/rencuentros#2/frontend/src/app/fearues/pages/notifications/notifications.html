@@ -1,0 +1,46 @@
+<body>
+  <header>
+    <div class="top">Notificaciones</div>
+  </header>
+
+  <main class="container">
+    <div *ngIf="loading" class="muted">Cargando notificaciones...</div>
+    <div *ngIf="!loading && notifications.length === 0 && accepted.length === 0" class="muted">No tienes notificaciones</div>
+
+    <!-- Accepted notifications (you sent and were accepted) -->
+    <div class="card notif-card accepted" *ngFor="let a of accepted">
+      <div class="notif-left">
+        <div class="notif-avatar">{{ (a.NOMBRE_ORIGEN || a.nombre_origen || '')[0] || '?' }}</div>
+      </div>
+      <div class="notif-body">
+        <div class="notif-title"><strong>{{ a.NOMBRE_ORIGEN || a.nombre_origen || '' }}</strong> aceptó tu solicitud de amistad</div>
+        <div class="notif-meta muted">{{ a.FECHA_AMISTAD || a.fecha_amistad || '' }}</div>
+      </div>
+    </div>
+
+    <!-- Pending incoming requests -->
+    <div class="card notif-card" *ngFor="let n of notifications">
+      <div class="notif-left">
+        <div class="notif-avatar">{{ (n.NOMBRE_ORIGEN || n.nombre_origen || '')[0] || '?' }}{{ (n.APELLIDO_ORIGEN || n.apellido_origen || '')[0] || '' }}</div>
+      </div>
+      <div class="notif-body">
+        <div class="notif-title"><strong>{{ n.NOMBRE_ORIGEN || n.nombre_origen || '' }}</strong> te ha enviado una solicitud de amistad</div>
+        <div class="notif-meta muted">{{ n.FECHA_SOLICITUD || n.fecha_solicitud || '' }}</div>
+      </div>
+      <div class="notif-actions">
+        <button class="btn btn-accept" (click)="accept(n.ID_RELACION || n.id_relacion || n.id_relacion_amistad)">Aceptar</button>
+        <button class="btn btn-reject" (click)="reject(n.ID_RELACION || n.id_relacion || n.id_relacion_amistad)">Rechazar</button>
+      </div>
+    </div>
+  </main>
+
+  <nav class="bottom" aria-label="Navegación">
+    <div class="nav-wrap">
+      <a class="tab" routerLink="/home">🗓️ <span>Calendario</span></a>
+      <a class="tab" routerLink="/chats">💬 <span>Chats</span></a>
+      <a class="tab" routerLink="/search">🔎 <span>Buscar</span></a>
+      <a class="tab" routerLink="/account">⚙️ <span>Cuenta</span></a>
+      <a class="tab active" routerLink="/notifications">🔔 <span>Notificaciones</span></a>
+    </div>
+  </nav>
+</body>

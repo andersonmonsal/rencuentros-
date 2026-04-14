@@ -1,0 +1,88 @@
+<body>
+  <header>
+    <div class="top">
+      <strong class="title">Configuración</strong>
+      <form action="index.html">
+        <button class="btn-logout" (click)="onLogout()">Cerrar sesión</button>
+      </form>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Foto de perfil -->
+    <section class="card section" aria-label="Foto de perfil">
+      <div class="avatar-wrap">
+  <div class="avatar">{{ initials }}</div>
+        <div class="profile-info">
+          <div class="name">{{ name }}</div>
+          <small class="muted">{{ email }}</small>
+        </div>
+        <div class="avatar-actions">
+          <button class="btn btn-outline">Subir foto</button>
+          <button class="btn btn-outline">Eliminar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Datos personales -->
+    <section class="card section" aria-label="Datos personales">
+      <h3>Datos personales</h3>
+      <div class="row two-col">
+        <div>
+          <form [formGroup]="profileForm">
+            <label for="nombre">Nombre</label>
+            <input id="nombre" placeholder="Tu nombre" formControlName="nombre" />
+            <label for="apellido">Apellido</label>
+            <input id="apellido" placeholder="Tu apellido" formControlName="apellido" />
+          </form>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-outline">Cancelar</button>
+        <button class="btn btn-primary" (click)="saveProfile()">Guardar cambios</button>
+      </div>
+    </section>
+
+    <!-- Seguridad -->
+    <section class="card section" aria-label="Seguridad">
+      <h3>Seguridad</h3>
+      <form [formGroup]="passwordForm">
+        <div class="row">
+          <div>
+            <label for="password-actual">Contraseña actual</label>
+            <input id="password-actual" formControlName="actual" type="password" placeholder="••••••••" />
+          </div>
+          <div>
+            <label for="password-nueva">Nueva contraseña</label>
+            <input id="password-nueva" formControlName="nueva" type="password" placeholder="••••••••" />
+          </div>
+          <div>
+            <label for="confirm-password-nueva">Confirmar nueva contraseña</label>
+            <input id="confirm-password-nueva" formControlName="confirm" type="password" placeholder="••••••••" />
+          </div>
+        </div>
+      </form>
+      <div class="actions">
+        <button class="btn btn-primary" (click)="updatePassword()">Actualizar contraseña</button>
+      </div>
+    </section>
+
+    <!-- Zona peligrosa -->
+    <section class="card danger section" aria-label="Zona peligrosa">
+      <h3>Zona peligrosa</h3>
+      <p>Eliminar cuenta y datos asociados.</p>
+      <button class="btn btn-outline danger-action" (click)="deleteAccount()">Eliminar cuenta</button>
+    </section>
+  </main>
+
+  <!-- Navegación inferior -->
+  <nav class="bottom" aria-label="Navegación">
+    <div class="nav-wrap">
+      <a class="tab" routerLink="/home">🗓️ <span>Calendario</span></a>
+      <a class="tab" routerLink="/chats">💬 <span>Chats</span></a>
+      <a class="tab" routerLink="/search">🔎 <span>Buscar</span></a>
+      <a class="tab active" routerLink="/account">⚙️ <span>Cuenta</span></a>
+      <a class="tab" routerLink="/notifications">🔔 <span>Notificaciones</span></a>
+    </div>
+  </nav>
+</body>
