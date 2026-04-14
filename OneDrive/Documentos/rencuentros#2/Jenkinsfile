@@ -2,13 +2,27 @@ pipeline {
     agent any
 
     stages {
-        stage('Clonar') {
+
+        stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('SonarQube') {
+        stage('Install dependencies') {
+            steps {
+                sh 'pip install -r requirements.txt'
+                sh 'pip install pytest pytest-cov'
+            }
+        }
+
+        stage('Run Tests with Coverage') {
+            steps {
+                sh 'pytest --cov=./ --cov-report=xml'
+            }
+        }
+
+        stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonar') {
                     sh 'sonar-scanner'
